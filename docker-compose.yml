@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  react-app:
+    build: ./react-app
+    volumes:
+      - ./react-app/app/:/home/
+    ports:
+      - 9041:80
+      - 9042:443
+    networks:
+      - youtube-downloader
+    restart: always
+    environment:
+      - VITE_API_HOST=$HOSTIP
+  fastapi:
+    build: ./backend-api
+    container_name: fastapi
+    volumes:
+      - ./backend-api:/home/app/
+      - ./youtube-downloads:/home/videos/
+    ports:
+      - 23002:8000
+    environment:
+      SECRET_KEY: 9cef962019e98c0f4ed951b979d615cbaa98e51edd464ca5cc5c99349f5b9e6b
+      PYTHONPATH: /home/app
+    networks:
+      - youtube-downloader
+    restart: always
+  mongo:
+    build: ./mongo/
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: fastapidb 
+    ports:
+      - 23003:27017
+    networks:
+      - youtube-downloader
+    command: mongod --replSet rs0 --keyFile /data/configdb/keyfile
+    volumes:
+      - ./mongo/mongodb_data:/data/db
+    healthcheck:
+      test: |
+        echo "try { 
+          rs.status(); 
+          var cfg = rs.conf(); 
+          cfg.members[0].host = 'mongo:27017'; 
+          rs.reconfig(cfg, {force: true}); 
+        } catch (err) { 
+          rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) 
+        }" | mongosh -u root -p example --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 30
+
+networks:
+  youtube-downloader:
+    driver: bridge
