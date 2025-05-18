@@ -3,13 +3,16 @@ import datetime
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
-from Schemas.Schemas import BaseSignupSchema, BaseLoginSchema, FetchVideoDetailsSchema, VideoDetailsResponse, FetchUserActivitySchema
+from Schemas.Schemas import BaseSignupSchema, BaseLoginSchema, FetchVideoDetailsSchema, VideoDetailsResponse, FetchUserActivitySchema, DeleteUserActivitySchema
 from Exception_handler.exceptions import validation_exception_handler
 from utility.utils import list_video_details, update_headers, get_headers, get_date_time, hash_password_func, verify_password, generateJWTToken, build_response, verifyJWTToken, download_video_yt_dlp
 from utility.custom_logger import logger
-from models.mongodb_connection import insert_document, find_document
+from models.mongodb_connection import insert_document, find_document, delete_document
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
+from bson import ObjectId
+
+
 app = FastAPI()
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_middleware(
@@ -177,6 +180,34 @@ async def fetch_user_history_paginated(request: Request, fetch_user_history_requ
     status_code, response_from_mongo_db = find_document("user_audit", query= {
         "customer_id": cust_id
     }, db_name="userbase_db", skip=int(fetch_user_history_request["skip"]), limit=int(fetch_user_history_request["limit"]))
+    try:
+        return build_response({
+                "message": response_from_mongo_db
+            }, status_code)
+    except Exception as E:
+        print(E)
+        message = {
+            "errors": "Internal Server Error"
+        }
+        return build_response(message, 500)
+    
+@app.post(f'{version}/delete_user_history')
+async def delete_user_history_func(request: Request, delete_user_history_request: DeleteUserActivitySchema, response: Response):
+    print(delete_user_history_request.dict())
+    response = update_headers(response)
+    delete_user_history_request = delete_user_history_request.dict()
+    status_code, message = verifyJWTToken(delete_user_history_request["jwt_token"])
+    print(message, status_code)
+    if status_code != 200:
+        return build_response({
+            "message": message
+        }, status_code)
+    cust_id = message
+    status_code, response_from_mongo_db = delete_document("user_audit", query= {
+        "_id": ObjectId(f"{delete_user_history_request["doc_id"]}"),
+        "customer_id": cust_id
+    }, db_name="userbase_db")
+    print(":::::::::::::response from mongo db", response_from_mongo_db)
     try:
         return build_response({
                 "message": response_from_mongo_db

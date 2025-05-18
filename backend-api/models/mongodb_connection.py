@@ -55,3 +55,19 @@ def find_document(collection_name, query, db_name="default_db", skip = None, lim
         logger.error("::::Error while Searching data")
         logger.info(E)
         return 400, err_mssg
+
+def delete_document(collection_name, query, db_name="default_db"):
+    err_mssg = ""
+    try:
+        db = client[db_name]
+        collection = db[collection_name]
+        result = collection.delete_one(query)
+        if result.deleted_count > 0:
+            return 200, {"message": f"Document deleted with id {str(query["_id"])}"}
+        else:
+            err_mssg = "Data does not exist"
+            raise Exception(err_mssg)
+    except Exception as E:
+        logger.error("::::Error while deleting data")
+        logger.info(str(E))
+        return 400, err_mssg

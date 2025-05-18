@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../utils/Session.js';
+import logo from '../../public/download.svg';
+import {DeleteButton, StyleDelete} from "../components/DeleteButton";
 
 function History() {
     const navigate = useNavigate()
@@ -38,6 +40,31 @@ function History() {
             console.log(message)
           });
       }, [activitySkip]);
+
+      const deleteData = async(id) => {
+        const deleteUserHistoryPayload = {
+            "jwt_token": jwt_token["token"],
+            "doc_id": String(id)
+        }
+        const apiHost = import.meta.env.VITE_API_HOST;
+        const apiPort = import.meta.env.VITE_API_PORT;
+        const apiVersion = import.meta.env.VITE_API_VERSION;
+        const deleteUserHistory = import.meta.env.VITE_API_DLETE_USER_HISTORY;
+        console.log(`http://${apiHost}:${apiPort}/${apiVersion}/${deleteUserHistory}`)
+        try{
+            const response = await axios.post(`http://${apiHost}:${apiPort}/${apiVersion}/${deleteUserHistory}`, deleteUserHistoryPayload)
+            console.log(response?.data?.message)
+            setActivities((prev_state) => {
+                return prev_state.filter((item) => item._id.$oid !== id)
+            })
+        }   
+        catch (err) {
+            console.error('Deleting of User History Failed:', err.response?.data?.message || err.message)
+            const message = err.response?.data?.message || err.response?.data?.errors || err.message
+            console.log(message)
+            console.log(err.response.status)
+        }
+      }
     return (
         <div className="container mt-5 p-4 border rounded shadow-sm bg-light" style={{ maxWidth: '90%' }}>
             <h2 className="text-center mb-4">History</h2>
@@ -49,8 +76,9 @@ function History() {
                   <th>title</th>
                   <th>audio_id</th>
                   <th>video_id</th>
-                  <th>video_url</th>
                   <th>download_video</th>
+                  <th>video_url</th>
+                  <th>delete log</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,7 +110,7 @@ function History() {
                             {video_id}
                         </td>
                         <td>
-                            <button className="btn btn-secondary" onClick={async() => {
+                            <div style={StyleDelete} onClick={async() => {
                                 const download_video_payload =  {
                                     ...item.video_details,
                                     "jwt_token": jwt_token["token"]
@@ -106,10 +134,15 @@ function History() {
                                 window.URL.revokeObjectURL(downloadUrl);
                                 link.remove();
                                 console.log(':::::::::::::', response.data)
-                            }}>download again</button>
+                            }}><img src={logo} alt="Logo" width={25} /></div>
                         </td>
                         <td>
-                            <a href={item.video_details.video_url} target="_blank" rel="noopener noreferrer">link</a>
+                            <a href={item.video_details.video_url} target="_blank" rel="noopener noreferrer">
+                            <img src="/link.svg" alt="Link" width={25} />
+                            </a>
+                        </td>
+                        <td>
+                            <DeleteButton onClick={() => deleteData(item._id.$oid)} />
                         </td>
                     </tr>
                 )
