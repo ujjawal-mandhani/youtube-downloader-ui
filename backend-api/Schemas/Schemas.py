@@ -28,6 +28,7 @@ class VideoDetailsResponse(BaseModel):
     title: str = Field(..., pattern=r"^.*$")
     jwt_token: str = Field(..., pattern=r"^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$")
     video_url: str = Field(...,pattern=r"^(https?|ftp)://[^\s/$.?#].[^\s]*$")
+    sub: str = Field(None, pattern=r"^[a-zA-Z\s]+$")
     
 class FetchUserActivitySchema(BaseModel):
     jwt_token: str = Field(..., pattern=r"^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$")

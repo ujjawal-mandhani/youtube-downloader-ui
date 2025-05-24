@@ -14,6 +14,7 @@ function Home() {
     const [fetchdetailsErr, setfetchdetailsErr] = useState('');
     const [successAnimationState, setSuccessAnimationState] = useState(false)
     const [downloadVideoError, setdownloadVideoError] = useState('')
+    const [dropDownSelectedOption, setDropDownSelectedOption] = useState("");
 
     const { handleLogOut } = useAuth();
     
@@ -29,6 +30,9 @@ function Home() {
         return prev_copy;
       })
     }
+    const handleDropDownChange = (event) => {
+      setDropDownSelectedOption(event.target.value);
+    }
 
     const downloadVideoFunc = async(e) => {
       e.preventDefault()
@@ -38,7 +42,11 @@ function Home() {
         "audio_video_formats": selectedIds,
         "title": videoDetails["title"],
         "jwt_token": jwt_token["token"],
-        "video_url": videoUrl
+        "video_url": videoUrl,
+        "sub": dropDownSelectedOption
+      }
+      if (!download_video_payload.sub) {
+        delete download_video_payload.sub;
       }
       console.log(download_video_payload)
       try {
@@ -132,6 +140,24 @@ function Home() {
         <>
         <div className="mb-4"> Title Name: <span className="text-primary">{videoDetails?.title}</span></div>
           <form onSubmit={downloadVideoFunc}>
+            {
+              Object.prototype.hasOwnProperty.call(videoDetails, "subs") && videoDetails.subs.length > 0 && (
+                <>
+                  <div className="mb-3">
+                  <label htmlFor="subsDropdown" className="form-label">Choose Subtitles: </label>
+                  <select id="subsDropdown" value={dropDownSelectedOption} onChange={handleDropDownChange} className="form-select">
+                  <option value="">--Choose--</option>
+                    {
+                      videoDetails.subs.map((subs_item, index) => {
+                        return <option key={index} value={subs_item}>{subs_item}</option>
+                        
+                      })
+                    }
+                    </select>
+                  </div>
+                </>
+              )
+            }
             <div className="table-responsive mb-3">
             <table className="table table-bordered table-hover align-middle">
               <thead className="table-light">

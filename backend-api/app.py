@@ -134,7 +134,7 @@ async def download_video(request: Request, download_video_request: VideoDetailsR
             "message": message
         }, status_code)
     cust_id = message
-    status_code, local_video_url = download_video_yt_dlp(array_format_code = download_video_request_payload, customerid=cust_id, sub_title_format='', output_path='/home/videos/')
+    status_code, local_video_url = download_video_yt_dlp(array_format_code = download_video_request_payload, customerid=cust_id, sub_title_format=download_video_request_payload.get("sub"), output_path='/home/videos/')
     if status_code != 200:
         return build_response({
             "message": local_video_url

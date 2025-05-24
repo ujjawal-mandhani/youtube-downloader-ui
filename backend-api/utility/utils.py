@@ -6,6 +6,7 @@ import yt_dlp
 from fastapi.responses import JSONResponse
 import re
 from datetime import datetime as dt
+import ffmpeg
 
 
 secret_value_jwt = os.getenv("SECRET_KEY")
@@ -105,6 +106,44 @@ def list_video_details(video_url):
           return 200, final_data
     except:
       return 400, None
+
+def merge_video_audio(video_path, audio_path, output_path, sub_format):
+    try:
+      video = ffmpeg.input(video_path)
+      audio = ffmpeg.input(audio_path)
+      if sub_format:
+        # Apply subtitles filter (burn subtitles into video)
+        video = video.filter('subtitles', sub_format)
+      # inputs = [video, audio]
+      # if sub_format:
+      #     subs = ffmpeg.input(sub_format)
+      #     inputs.append(subs)
+      # (
+      #     ffmpeg
+      #     .output(*inputs, output_path, c='copy')
+      #     .run(overwrite_output=True)
+      # )
+      (
+        ffmpeg
+            .output(video, audio, output_path,
+                    vcodec='libx264',  # re-encode video to burn subtitles
+                    acodec='aac',       # encode audio (or 'copy' if compatible)
+                    strict='experimental',  # to allow aac encoding
+                    movflags='faststart')   # optional: better for web playback
+            .run(overwrite_output=True)
+      )
+    except ffmpeg.Error as e:
+      print("FFmpeg ERROR:")
+      try:
+          print("  Command:", getattr(e, 'cmd', 'Unavailable'))
+          print("  Stdout:", e.stdout.decode() if e.stdout else "None")
+          print("  Stderr:", e.stderr.decode() if e.stderr else "None")
+      except Exception as inner:
+          print("Error while printing FFmpeg error:", inner)
+    except Exception as e:
+        print("General Exception:", str(e))
+        
+
 def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', output_path='/home/videos/'):
   output_path = output_path + str(customerid) + '/' + str(dt.now().strftime('%Y-%m-%d'))
   video_url = array_format_code["video_url"]
@@ -112,6 +151,8 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
     "audio": 0,
     "video": 0
   }
+  if sub_title_format in [None, '']:
+    sub_title_format = ''
   title = array_format_code["title"]
   if len(array_format_code["audio_video_formats"].items()) != 2 and not video_url.__contains__('instagram'):
     return 400, "Please select one Audio format and one video format"
@@ -134,7 +175,7 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
     options = {
         'format': format_code,
         "writesubtitles": True,
-        "subtitleslangs": [sub_title_format],
+        "subtitleslangs": [sub_title_format.split(' ')[0]],
         "postprocessors": [
             {"key": "FFmpegSubtitlesConvertor", "format": "srt"}
         ],
@@ -151,14 +192,21 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
       print(E)
       return 400, str(E)
   if not video_url.__contains__('instagram'):
-    ffmpeg_string = "ffmpeg -i " + " -i ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))
-    print(ffmpeg_string)
-    os.system(f"""
-            {ffmpeg_string} -c copy "{output_path}/{title}_updated.mp4"
-        """)
-    os.system(f""" 
-            rm {" ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))}
-        """)
+    ffmpeg_string = "ffmpeg -y -i " + " -i ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))
+    if sub_title_format != '':
+      ffmpeg_string = ffmpeg_string + " -i " + f'"{output_path}/{title}.{sub_title_format.split(' ')[0]}.srt"'
+      ffmpeg_final = f'{ffmpeg_string} -map 1:v:0 -map 0:a:0 -map 2:0 -c:v copy -c:a copy -c:s mov_text "{output_path}/{title}_updated.mp4"'
+      rm_cmd = f'rm {" ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))} "{output_path}/{title}.{sub_title_format.split(' ')[0]}.srt"'
+    else:
+      ffmpeg_final = f'{ffmpeg_string} -c copy "{output_path}/{title}_updated.mp4"'
+      rm_cmd = f'rm {" ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))}'
+    print(ffmpeg_final)
+    os.system(ffmpeg_final)
+    # audio_video_details = list(map(lambda x:  f'{output_path}/{title}.{x["ext"]}', array_format_code["audio_video_formats"].values()))
+    # print(":::::::::::::::::Merger", audio_video_details[0], audio_video_details[1], f"{output_path}/{title}_updated.mp4")
+    # merge_video_audio(audio_video_details[0], audio_video_details[1], f"{output_path}/{title}_updated.mp4", f"{output_path}/{title}.{sub_title_format.split(' ')[0]}.srt")
+    print(rm_cmd)
+    os.system(rm_cmd)
     return 200, {
       "video_path": f"{output_path}/{title}_updated.mp4"
     }
