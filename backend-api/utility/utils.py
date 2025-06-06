@@ -153,7 +153,7 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
   }
   if sub_title_format in [None, '']:
     sub_title_format = ''
-  title = array_format_code["title"]
+  title = array_format_code["title"].replace('"', '') ## Bug to remove code where title contains " double quote 
   if len(array_format_code["audio_video_formats"].items()) != 2 and not video_url.__contains__('instagram'):
     return 400, "Please select one Audio format and one video format"
   if video_url.__contains__('instagram') and len(array_format_code["audio_video_formats"].items()) != 1:
