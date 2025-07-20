@@ -13,7 +13,8 @@ function History() {
 
     const { handleLogOut } = useAuth();
 
-    const apiHost = import.meta.env.VITE_API_HOST;
+    // const apiHost = import.meta.env.VITE_API_HOST;
+    const apiHost = `${window.location.hostname}`
     const apiPort = import.meta.env.VITE_API_PORT;
     const apiVersion = import.meta.env.VITE_API_VERSION;
     const fetchUserHistory = import.meta.env.VITE_API_FETCH_USER_HISTORY;
@@ -46,7 +47,8 @@ function History() {
             "jwt_token": jwt_token["token"],
             "doc_id": String(id)
         }
-        const apiHost = import.meta.env.VITE_API_HOST;
+        // const apiHost = import.meta.env.VITE_API_HOST;
+        const apiHost = `${window.location.hostname}`
         const apiPort = import.meta.env.VITE_API_PORT;
         const apiVersion = import.meta.env.VITE_API_VERSION;
         const deleteUserHistory = import.meta.env.VITE_API_DLETE_USER_HISTORY;
@@ -116,7 +118,8 @@ function History() {
                                     "jwt_token": jwt_token["token"]
                                 }
                                 console.log(download_video_payload)
-                                const apiHost = import.meta.env.VITE_API_HOST;
+                                // const apiHost = import.meta.env.VITE_API_HOST;
+                                const apiHost = `${window.location.hostname}`
                                 const apiPort = import.meta.env.VITE_API_PORT;
                                 const apiVersion = import.meta.env.VITE_API_VERSION;
                                 const downloadVideo = import.meta.env.VITE_API_DOWNLOAD_VIDEO;

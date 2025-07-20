@@ -50,7 +50,8 @@ function Home() {
       }
       console.log(download_video_payload)
       try {
-        const apiHost = import.meta.env.VITE_API_HOST;
+        // const apiHost = import.meta.env.VITE_API_HOST;
+        const apiHost = `${window.location.hostname}`
         const apiPort = import.meta.env.VITE_API_PORT;
         const apiVersion = import.meta.env.VITE_API_VERSION;
         const downloadVideo = import.meta.env.VITE_API_DOWNLOAD_VIDEO;
@@ -90,7 +91,8 @@ function Home() {
       setdownloadVideoError('')
       e.preventDefault()
       const token = jwt_token?.token
-      const apiHost = import.meta.env.VITE_API_HOST;
+      // const apiHost = import.meta.env.VITE_API_HOST;
+      const apiHost = `${window.location.hostname}`
       const apiPort = import.meta.env.VITE_API_PORT;
       const apiVersion = import.meta.env.VITE_API_VERSION;
       const fetchVideoUrl = import.meta.env.VITE_API_FETCH_VIDEO_DETAILS;

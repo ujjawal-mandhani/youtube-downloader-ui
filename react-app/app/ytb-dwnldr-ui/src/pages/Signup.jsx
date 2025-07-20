@@ -30,7 +30,8 @@ function Signup() {
     setSignupError('');
     setSignupSuccess('');
     try {
-      const apiHost = import.meta.env.VITE_API_HOST;
+      // const apiHost = import.meta.env.VITE_API_HOST;
+      const apiHost = `${window.location.hostname}`
       const apiPort = import.meta.env.VITE_API_PORT;
       const apiVersion = import.meta.env.VITE_API_VERSION;
       const apiSignup = import.meta.env.VITE_API_SIGNUP;

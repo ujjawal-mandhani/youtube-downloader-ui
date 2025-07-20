@@ -154,8 +154,8 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
   if sub_title_format in [None, '']:
     sub_title_format = ''
   title = array_format_code["title"].replace('"', '') ## Bug to remove code where title contains " double quote 
-  if len(array_format_code["audio_video_formats"].items()) != 2 and not video_url.__contains__('instagram'):
-    return 400, "Please select one Audio format and one video format"
+  # if len(array_format_code["audio_video_formats"].items()) != 2 and not video_url.__contains__('instagram'):
+  #   return 400, "Please select one Audio format and one video format"
   if video_url.__contains__('instagram') and len(array_format_code["audio_video_formats"].items()) != 1:
     return 400, "Please select only one format"
   for id, data in array_format_code["audio_video_formats"].items():
@@ -164,8 +164,9 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
       flag_audio_video_checker["audio"] = flag_audio_video_checker["audio"] + 1
     if bool(re.match(pattern, data["resolution"])):
       flag_audio_video_checker["video"] = flag_audio_video_checker["video"] + 1
-  if (flag_audio_video_checker["video"] != 1 or flag_audio_video_checker["video"] != 1) and not video_url.__contains__('instagram'):
-    return 400, "Please select one Audio format and one video format"
+  if flag_audio_video_checker["video"] == 0 and not video_url.__contains__('instagram'):
+    print("::::::::::::flag_audio_video_checker", flag_audio_video_checker)
+    return 400, "Please select one Audio format or one video format"
   if video_url.__contains__('instagram') and flag_audio_video_checker["video"] != 1:
     return 400, "Please select one Audio format and one video format"
   for id, data in array_format_code["audio_video_formats"].items():
@@ -191,7 +192,7 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
     except Exception as E:
       print(E)
       return 400, str(E)
-  if not video_url.__contains__('instagram'):
+  if (not video_url.__contains__('instagram')) and (flag_audio_video_checker["video"] + flag_audio_video_checker["audio"]) != 1:
     ffmpeg_string = "ffmpeg -y -i " + " -i ".join(list(map(lambda x:  f'"{output_path}/{title}.{x["ext"]}"', array_format_code["audio_video_formats"].values())))
     if sub_title_format != '':
       ffmpeg_string = ffmpeg_string + " -i " + f'"{output_path}/{title}.{sub_title_format.split(' ')[0]}.srt"'
