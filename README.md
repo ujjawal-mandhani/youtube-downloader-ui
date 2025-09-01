@@ -1,10 +1,11 @@
-## Youtube And Instagram Downloader 
+## Youtube, Instagram, Hotstar Downloader 
 
 ### Tools Used
 
 * React 
 * MongoDB
 * Fast API
+* Required firefox and logged in Hotstar Account so cookies can be mounted inside container
 
 ## Screen Shots 
 

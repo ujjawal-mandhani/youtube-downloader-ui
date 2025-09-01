@@ -82,6 +82,9 @@ def list_video_details(video_url):
         'writeautomaticsub': True,
         'quiet': True
     }
+    if video_url.__contains__('hotstar.com'):
+      ydl_opts["cookiesfrombrowser"] = ("firefox", None, None, None)
+      print(":::::::::::", ydl_opts)
     try:
       with yt_dlp.YoutubeDL(ydl_opts) as ydl:
           info_dict = ydl.extract_info(video_url, download=False)
@@ -183,6 +186,9 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
         "writeautomaticsub": True,
         'outtmpl': f'{output_path}/{title}.{ext}'
     }
+    if video_url.__contains__('hotstar.com'):
+      options["cookiesfrombrowser"] = ("firefox", None, None, None)
+      print(":::::::::::", options)
     try:
       if sub_title_format == '':
           for item in ["writesubtitles", "subtitleslangs", "postprocessors", "writeautomaticsub"]:
