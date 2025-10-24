@@ -2,3 +2,5 @@
 youtube-downloads
 mongo/mongodb_data
 react-app/app/ytb-dwnldr-ui/node_modules
+.DS_Store
+.env

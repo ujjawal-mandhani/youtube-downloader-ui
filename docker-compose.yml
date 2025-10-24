@@ -3,6 +3,12 @@
 services:
   react-app:
     build: ./react-app
+    platform: linux/amd64
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.5'
     volumes:
       - ./react-app/app/:/home/
     ports:
@@ -11,29 +17,39 @@ services:
     networks:
       - my_shared_network
     restart: always
-    environment:
-      - VITE_API_HOST=$HOSTIP
   fastapi:
     build: ./backend-api
+    platform: linux/amd64
     container_name: fastapi
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.0'
     volumes:
       - ./backend-api:/home/app/
       - ./youtube-downloads:/home/videos/
-      - /home/ujjawalmandhani/.mozilla/firefox:/root/.mozilla/firefox
+      - ${FIREFOX_PROFILE_PATH}:/root/.mozilla/firefox
     ports:
       - 23002:8000
     environment:
-      SECRET_KEY: 9cef962019e98c0f4ed951b979d615cbaa98e51edd464ca5cc5c99349f5b9e6b
+      SECRET_KEY: ${FASTAPI_SECRET_KEY}
       PYTHONPATH: /home/app
     networks:
       - my_shared_network
     restart: always
   mongo:
     build: ./mongo/
+    # platform: linux/amd64
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.0'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: fastapidb 
     ports:
       - 23003:27017
@@ -51,7 +67,7 @@ services:
           rs.reconfig(cfg, {force: true}); 
         } catch (err) { 
           rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) 
-        }" | mongosh -u root -p example --port 27017 --quiet
+        }" | mongosh -u ${MONGO_INITDB_ROOT_USERNAME} -p ${MONGO_INITDB_ROOT_PASSWORD} --port 27017 --quiet
       interval: 5s
       timeout: 30s
       start_period: 0s
