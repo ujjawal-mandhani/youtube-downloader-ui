@@ -35,6 +35,8 @@ services:
     environment:
       SECRET_KEY: ${FASTAPI_SECRET_KEY}
       PYTHONPATH: /home/app
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     networks:
       - my_shared_network
     restart: always
