@@ -80,7 +80,8 @@ def list_video_details(video_url):
         'skip_download': True,
         'list_subs': True,
         'writeautomaticsub': True,
-        'quiet': True
+        'quiet': True,
+        'nocheckcertificate': True,
     }
     if video_url.__contains__('hotstar.com'):
       ydl_opts["cookiesfrombrowser"] = ("firefox", None, None, None)
@@ -184,7 +185,8 @@ def download_video_yt_dlp(array_format_code, customerid, sub_title_format='', ou
             {"key": "FFmpegSubtitlesConvertor", "format": "srt"}
         ],
         "writeautomaticsub": True,
-        'outtmpl': f'{output_path}/{title}.{ext}'
+        'outtmpl': f'{output_path}/{title}.{ext}',
+        'nocheckcertificate': True,
     }
     if video_url.__contains__('hotstar.com'):
       options["cookiesfrombrowser"] = ("firefox", None, None, None)
