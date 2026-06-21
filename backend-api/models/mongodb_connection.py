@@ -2,8 +2,11 @@ from pymongo import MongoClient
 from utility.custom_logger import logger
 from bson.json_util import dumps
 import json
+import os 
 
-client = MongoClient(f"mongodb://root:example@mongo:27017/")
+username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+client = MongoClient(f"mongodb://{username}:{password}@mongo:27017/")
 
 def insert_document(collection_name, data, parameters_to_check, db_name="default_db"):
     """
